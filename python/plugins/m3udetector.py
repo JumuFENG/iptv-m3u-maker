@@ -1,10 +1,9 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from .detectbase import DetectorBase
 
-class dotSource(DetectorBase):
-    """ detector for dotpy_source """
+class m3uSource(DetectorBase):
+    """ detector for m3u files """
     def getTitleUrl(self):
         sourcePath = './plugins/dotpy_source'
         sourceUrls = []

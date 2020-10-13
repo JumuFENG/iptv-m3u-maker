@@ -205,5 +205,5 @@ class Tools (object) :
             typ = 'w'
         else :
             typ = 'a'
-        with open(filePath, typ) as f: 
+        with open(filePath, typ, encoding="utf-8") as f: 
             f.write(time.strftime("%Y/%m/%d %H:%M:%S", time.localtime()) + ": " + txt + "\r\n")
