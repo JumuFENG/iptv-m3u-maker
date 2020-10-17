@@ -15,6 +15,26 @@ class M3uParser(object):
     		return ''
     	return r.group(1).strip()
 
+    def write_to_file(self, file):
+        with open(file, 'w', encoding="utf-8") as f:
+            f.write("#EXTM3U\n")
+            for it in self.items:
+                if len(it['name']) == 0 or len(it['url']) == 0:
+                    continue
+                ext_line = '#EXTINF:-1'
+                if 'title' in it and len(it['title']) > 0:
+                    ext_line += ' group-title=\"%s\"' % it['title']
+                if 'tvgname' in it and len(it['tvgname']) > 0:
+                    ext_line += ' tvg-name=\"%s\"' % it['tvgname']
+                if 'logo' in it and len(it['logo']) > 0:
+                    ext_line += ' tvg-logo=\"%s\"' % it['logo']
+                if 'id' in it and len(it['id']) > 0:
+                    ext_line += ' tvg-id=\"%s\"' % it['id']
+                ext_line += ', ' + it['name']
+                f.write(ext_line + '\n')
+                f.write(it['url'] + '\n')
+        self.items = []
+
     def get_ext_title(self, ext_line):
     	title = re.search(r"group-title=\"(.*?)\"", ext_line)
     	return self._extract_re_group1(title)
@@ -40,7 +60,7 @@ class M3uParser(object):
     		return url_line
     	return ''
 
-    def decodeM3u(self, file):
+    def decode_m3u(self, file):
     	with open(file, 'r', encoding="utf-8", errors='ignore') as f:
     		lines = f.readlines()
     		for i in range(0, len(lines)):
@@ -90,27 +110,38 @@ class M3uParser(object):
                             continue
                         self.items.append({'url':linef.strip(), 'name':linet.strip()})
 
-    def write_to_file(self, file):
-    	with open(file, 'w', encoding="utf-8") as f:
-    		f.write("#EXTM3U\n")
-    		for it in self.items:
-    			if len(it['name']) == 0 or len(it['url']) == 0:
-    				continue
-    			ext_line = '#EXTINF:-1'
-    			if 'title' in it and len(it['title']) > 0:
-    				ext_line += ' group-title=\"%s\"' % it['title']
-    			if 'tvgname' in it and len(it['tvgname']) > 0:
-    				ext_line += ' tvg-name=\"%s\"' % it['tvgname']
-    			if 'logo' in it and len(it['logo']) > 0:
-    				ext_line += ' tvg-logo=\"%s\"' % it['logo']
-    			if 'id' in it and len(it['id']) > 0:
-    				ext_line += ' tvg-id=\"%s\"' % it['id']
-    			ext_line += ', ' + it['name']
-    			f.write(ext_line + '\n')
-    			f.write(it['url'] + '\n')
-    	self.items = []
+    def decode_by_file_ext(self, file):
+        file_ext = re.search(r".*\.(.*)$", file)
+        file_ext = self._extract_re_group1(file_ext)
+        if file_ext == 'm3u' or file_ext == 'M3U':
+            self.decode_m3u(file)
+        elif file_ext == 'dpl' or file_ext == 'DPL':
+            self.decode_daum_play_list(file)
+        else:
+            print('unknown file!', file)
 
-if __name__ == '__main__':
-	m = M3uParser()
-	ms = m.decode_daum_play_list('gangao.dpl')
-	m.write_to_file('dot.m3u')
+    def decode_play_list(self, file):
+        first_line = ''
+        with open(file, 'r', encoding='utf-8', errors='ignore') as f:
+            l = f.readline()
+            first_line = l.strip('\n')
+
+        if first_line == '#EXTM3U':
+            self.decode_m3u(file)
+        elif first_line == 'DAUMPLAYLIST':
+            self.decode_daum_play_list(file)
+        elif ',' in first_line:
+            self.decode_comma_seperated_TL(file)
+        else:
+            self.decode_by_file_ext(file)
+
+    def decode_all_play_lists(self, dir):
+        for parent, dirs, files in os.walk(dir):
+            for f in files:
+                self.decode_play_list(parent + os.sep + f)
+
+
+# if __name__ == '__main__':
+# 	m = M3uParser()
+# 	ms = m.decode_all_play_lists('playlists')
+# 	m.write_to_file('dot.m3u')

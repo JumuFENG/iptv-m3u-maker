@@ -8,7 +8,7 @@ class Source(DetectorBase):
     def getTitleUrl(self):
         sourceUrls = []
         parser = M3uParser()
-        parser.decodeM3u('./plugins/m3u_source')
+        parser.decode_all_play_lists('./plugins/playlists')
         items = parser.items
         for it in items:
             if 'name' in it and 'url' in it:

@@ -24,7 +24,6 @@ class DetectorBase(object):
         threads.wait_completion()
 
     def detectData (self, title, url) :
-        print('detectData', title, url)
         info = self.T.fmtTitle(title)
 
         netstat = self.T.chkPlayable(url)

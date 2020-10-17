@@ -10,7 +10,6 @@ import os
 from plugins import base
 # from plugins import lista
 from plugins import listb
-from plugins import dotpy
 from plugins import m3udetector
 
 class Iptv (object):
@@ -24,17 +23,14 @@ class Iptv (object):
 
         self.DB.chkTable()
 
-        Base = base.Source()
-        Base.getSource()
-
-        Dotpy = dotpy.Source()
-        Dotpy.getSource()
+        # Base = base.Source()
+        # Base.getSource()
 
         m3u = m3udetector.Source()
         m3u.getSource()
 
-        self.outPut()
-        self.outJson()
+        # self.outPut()
+        # self.outJson()
 
         self.T.logger("抓取完成")
 
