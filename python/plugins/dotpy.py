@@ -3,7 +3,7 @@
 
 from .detectbase import DetectorBase
 
-class dotSource(DetectorBase):
+class Source(DetectorBase):
     """ detector for dotpy_source """
     def getTitleUrl(self):
         sourcePath = './plugins/dotpy_source'

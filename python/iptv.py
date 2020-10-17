@@ -11,6 +11,7 @@ from plugins import base
 # from plugins import lista
 from plugins import listb
 from plugins import dotpy
+from plugins import m3udetector
 
 class Iptv (object):
 
@@ -26,11 +27,11 @@ class Iptv (object):
         Base = base.Source()
         Base.getSource()
 
-        Dotpy = dotpy.dotSource()
+        Dotpy = dotpy.Source()
         Dotpy.getSource()
 
-        listB = listb.Source()
-        listB.getSource()
+        m3u = m3udetector.Source()
+        m3u.getSource()
 
         self.outPut()
         self.outJson()

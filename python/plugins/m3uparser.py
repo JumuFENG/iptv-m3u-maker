@@ -69,6 +69,27 @@ class M3uParser(object):
     			tl = l.split(',')
     			self.items.append({'url':tl[1].strip(), 'name':tl[0].strip()})
 
+    def decode_daum_play_list(self, file):
+        with open(file, 'r', encoding='utf-8', errors='ignore') as f:
+            lines = f.readlines()
+            for i in range(0, len(lines)):
+                line = lines[i].strip('\n')
+                if 'file' in line:
+                    linef = line.split('*')
+                    if len(linef) != 3:
+                        continue
+                    linef = linef[2]
+                    i += 1
+                    line2 = lines[i].strip('\n')
+                    if 'title' in line2:
+                        linet = line2.split('*')
+                        if len(linet) != 3:
+                            continue
+                        linet = linet[2]
+                        if len(linet) == 0 or len(linef) == 0:
+                            continue
+                        self.items.append({'url':linef.strip(), 'name':linet.strip()})
+
     def write_to_file(self, file):
     	with open(file, 'w', encoding="utf-8") as f:
     		f.write("#EXTM3U\n")
@@ -91,5 +112,5 @@ class M3uParser(object):
 
 if __name__ == '__main__':
 	m = M3uParser()
-	ms = m.decode_comma_seperated_TL('dotpy_source')
+	ms = m.decode_daum_play_list('gangao.dpl')
 	m.write_to_file('dot.m3u')
