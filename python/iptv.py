@@ -63,7 +63,7 @@ class Iptv (object):
                 else :
                     className = '其他频道'
 
-                f.write("#EXTINF:-1, group-title=\"%s\", %s\n" % (className, item[1]))
+                f.write("#EXTINF:-1 group-title=\"%s\", %s\n" % (className, item[1]))
                 f.write("%s\n" % (item[3]))
 
     def outJson (self) :
