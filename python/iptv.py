@@ -28,11 +28,11 @@ class Iptv (object):
         # Base = base.Source()
         # Base.getSource()
 
-        # m3u = m3udetector.Source()
-        # m3u.getSource()
-
-        dbchk = dbchecker.DbChecker()
+        dbchk = dbchecker.DbChecker(chkall=False)
         dbchk.getSource()
+
+        m3u = m3udetector.Source()
+        m3u.getSource()
 
         self.outPut()
         # self.outJson()
@@ -42,11 +42,9 @@ class Iptv (object):
     def outPut (self) :
         self.T.logger("正在生成m3u8文件")
 
-        sql = """SELECT * FROM
-            (SELECT * FROM %s WHERE online = 1 ORDER BY delay DESC) AS delay
-            GROUP BY LOWER(delay.name)
-            HAVING delay.name != '' and delay.name != 'CCTV-' AND delay.delay < 500
-            ORDER BY level ASC, length(name) ASC, name ASC
+        sql = """SELECT * FROM %s 
+            WHERE online = 1 and delay < 500 
+            ORDER BY level ASC, length(name) ASC, delay ASC 
             """ % (self.DB.table)
         result = self.DB.query(sql)
 
@@ -70,7 +68,7 @@ class Iptv (object):
 
         parser = m3uparser.M3uParser()
         parser.items = items
-        parser.write_to_file(os.path.join(os.path.dirname(os.path.abspath(__file__)).replace('python', 'http'), 'tv.m3u'))
+        parser.write_to_file(os.path.join(os.path.dirname(os.path.abspath(__file__)).replace('python', 'http'), 'iptv.m3u'))
 
     def outJson (self) :
         self.T.logger("正在生成Json文件")

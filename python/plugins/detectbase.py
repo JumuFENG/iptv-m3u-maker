@@ -15,12 +15,16 @@ class DetectorBase(object):
     def getItems(self):
         pass
 
+    def onCompleted(self):
+        pass
+
     def getSource(self):
         sourceItems = self.getItems()
         threads = ThreadPool(20)
         for info in sourceItems:
             threads.add_task(self.checkData, item = info)
         threads.wait_completion()
+        self.onCompleted()
 
     def checkData(self, item):
         if 'url' in item and len(item['url']) > 0:
