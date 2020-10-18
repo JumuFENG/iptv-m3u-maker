@@ -36,7 +36,7 @@ class DataBase (object) :
     def create (self) :
         if self.connStat == False : return False
 
-        sql = 'create table ' + self.table + ' (id integer PRIMARY KEY autoincrement, title text, quality text, url text, level integer, cros integer,  enable integer, online integer, delay integer, udTime text)'
+        sql = 'create table ' + self.table + ' (id integer PRIMARY KEY autoincrement, name text, tvgtitle text, url text, tvglogo text, tvgname text, tvgid text, quality text, level integer, cros integer, online integer, delay integer, udTime text, failcount integer)'
         self.cur.execute(sql)
 
     def query (self, sql, reTry = 3) :
@@ -85,6 +85,8 @@ class DataBase (object) :
 
         param = ''
         for k, v in data.items():
+            if v is None:
+                continue
             param = param + ", `%s` = '%s'" %(k, str(v).replace('"','\"').replace("'","''"))
 
         param = param[1:]
@@ -99,6 +101,16 @@ class DataBase (object) :
                 reTry = reTry - 1
                 self.edit(id, data, reTry)
 
+    def delete(self, id):
+        if self.connStat == False : return False
+
+        sql = "DELETE FROM " + self.table + " WHERE id = %s" % id
+        try:
+            self.cur.execute(sql)
+            self.conn.commit()
+        except:
+            print('delete failed! id = ', id)
+            pass
 
     def disConn (self) :
         if self.connStat == False : return False
@@ -122,3 +134,5 @@ class DataBase (object) :
         if tableStat == False :
             self.create()
 
+    def fmtDbData(self, td):
+        return {'name':td[1], 'title': td[2], 'url':td[3], 'logo':td[4], 'tvgname': td[5], 'tvgid': td[6], 'quality':td[7], 'level':td[8], 'cros':td[9], 'online':td[10], 'delay':td[11], 'failcount':td[13]}

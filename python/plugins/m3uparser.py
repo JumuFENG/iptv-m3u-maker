@@ -22,14 +22,14 @@ class M3uParser(object):
                 if len(it['name']) == 0 or len(it['url']) == 0:
                     continue
                 ext_line = '#EXTINF:-1'
-                if 'title' in it and len(it['title']) > 0:
+                if 'title' in it and it['title'] is not None and len(it['title']) > 0:
                     ext_line += ' group-title=\"%s\"' % it['title']
-                if 'tvgname' in it and len(it['tvgname']) > 0:
+                if 'tvgname' in it and it['tvgname'] is not None and len(it['tvgname']) > 0:
                     ext_line += ' tvg-name=\"%s\"' % it['tvgname']
-                if 'logo' in it and len(it['logo']) > 0:
+                if 'logo' in it and it['logo'] is not None and len(it['logo']) > 0:
                     ext_line += ' tvg-logo=\"%s\"' % it['logo']
-                if 'id' in it and len(it['id']) > 0:
-                    ext_line += ' tvg-id=\"%s\"' % it['id']
+                if 'tvgid' in it and it['tvgid'] is not None and len(it['tvgid']) > 0:
+                    ext_line += ' tvg-id=\"%s\"' % it['tvgid']
                 ext_line += ', ' + it['name']
                 f.write(ext_line + '\n')
                 f.write(it['url'] + '\n')
@@ -77,7 +77,7 @@ class M3uParser(object):
     			url = self.get_url(l2)
     			if len(url) == 0 or len(name) == 0:
     				continue
-    			self.items.append({'url':url, 'name':name, 'title': title, 'tvgname': gname, 'logo': logo, 'id': tvid})
+    			self.items.append({'url':url, 'name':name, 'title': title, 'tvgname': gname, 'logo': logo, 'tvgid': tvid})
 
     def decode_comma_seperated_TL(self, file):
     	with open(file, 'r', encoding="utf-8", errors='ignore') as f:

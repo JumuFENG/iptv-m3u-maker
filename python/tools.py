@@ -114,20 +114,41 @@ class Tools (object) :
         except :
             return data
 
-    def fmtTitle (self, string) :
+    def getLevel (self, name) :
         pattern = re.compile(r"(cctv[-|\s]*\d*)?(.*)", re.I)
-        tmp = pattern.findall(string)
+        tmp = pattern.findall(name)
         channelId = tmp[0][0].strip('-').strip()
         channeTitle = tmp[0][1]
 
-        channeTitle = channeTitle.replace('.m3u8', '')
+        if channelId != '':
+            pattern = re.compile(r"cctv[-|\s]*(\d*)", re.I)
+            channelId = re.sub(pattern, "CCTV-\\1", channelId)
 
-        pattern = re.compile(r"<.*?>", re.I)
+            if '+' in channeTitle :
+                channelId = channelId + str('+')
+
+        pattern = re.compile(r"\[\d+\*\d+\]", re.I)
         channeTitle = re.sub(pattern, "", channeTitle)
 
+        Area = area.Area()
+        level = Area.classify(str(channelId) + str(channeTitle))
+
+        # Radio
+        pattern = re.compile(r"(radio|fm)", re.I)
+        tmp = pattern.findall(channeTitle)
+        if len(tmp) > 0 :
+            level = 7
+
+        return level
+
+    def getQuality (self, name):
+        pattern = re.compile(r"(cctv[-|\s]*\d*)?(.*)", re.I)
+        tmp = pattern.findall(name)
+        channeTitle = tmp[0][1]
+
+        quality = ''
         pattern = re.compile(r"(fhd|hd|sd)", re.I)
         tmp = pattern.findall(channeTitle)
-        quality = ''
         if len(tmp) > 0 :
             quality = tmp[0]
             channeTitle = channeTitle.replace(tmp[0], '')
@@ -146,33 +167,7 @@ class Tools (object) :
         except :
             pass
 
-        result = {
-            'id'     : channelId,
-            'title'  : channeTitle.strip('-').strip(),
-            'quality': quality.strip('-').strip(),
-            'level'  : 4,
-        }
-
-        if result['id'] != '':
-            pattern = re.compile(r"cctv[-|\s]*(\d*)", re.I)
-            result['id'] = re.sub(pattern, "CCTV-\\1", result['id'])
-
-            if '+' in result['title'] :
-                result['id'] = result['id'] + str('+')
-
-        pattern = re.compile(r"\[\d+\*\d+\]", re.I)
-        result['title'] = re.sub(pattern, "", result['title'])
-
-        Area = area.Area()
-        result['level'] = Area.classify(str(result['id']) + str(result['title']))
-
-        # Radio
-        pattern = re.compile(r"(radio|fm)", re.I)
-        tmp = pattern.findall(result['title'])
-        if len(tmp) > 0 :
-            result['level'] = 7
-
-        return result
+        return quality.strip('-').strip()
 
     def chkPlayable (self, url) :
         try:

@@ -12,38 +12,26 @@ class DetectorBase(object):
         self.T = tools.Tools()
         self.now = int(time.time() * 1000)
 
-    def getTitleUrl(self):
+    def getItems(self):
         pass
 
     def getSource(self):
-        sourceUrls = self.getTitleUrl()
+        sourceItems = self.getItems()
         threads = ThreadPool(20)
-        for (t, u) in sourceUrls:
-            threads.add_task(self.detectData, title = t, url = u)
-
+        for info in sourceItems:
+            threads.add_task(self.checkData, item = info)
         threads.wait_completion()
 
-    def detectData (self, title, url) :
-        info = self.T.fmtTitle(title)
-
-        netstat = self.T.chkPlayable(url)
-
-        if netstat > 0 :
-            cros = 1 if self.T.chkCros(url) else 0
-            data = {
-                'title'  : str(info['id']) if info['id'] != '' else str(info['title']),
-                'url'    : str(url),
-                'quality': str(info['quality']),
-                'delay'  : netstat,
-                'level'  : info['level'],
-                'cros'   : cros,
-                'online' : 1,
-                'udTime' : self.now,
-            }
-            self.addData(data)
-            self.T.logger('正在分析[ %s ]: %s' % (str(info['id']) + str(info['title']), url))
-        else :
-            pass # MAYBE later :P
+    def checkData(self, item):
+        if 'url' in item and len(item['url']) > 0:
+            self.T.logger('正在分析[ %s ]: %s' % (item['name'], item['url']))
+            netstat = self.T.chkPlayable(item['url'])
+            item['online'] = 1 if netstat > 0 else 0
+            item['delay'] = netstat
+            item['udTime'] = self.now
+            if netstat == 0:
+                item['failcount'] += 1
+            self.addData(item)
 
     def addData (self, data) :
         DB = db.DataBase()
@@ -51,8 +39,10 @@ class DetectorBase(object):
         result = DB.query(sql)
 
         if len(result) == 0 :
-            data['enable'] = 1
             DB.insert(data)
         else :
             id = result[0][0]
-            DB.edit(id, data)
+            if data['failcount'] >= 10:
+                DB.delete(id)
+            else:
+                DB.edit(id, data)

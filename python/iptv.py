@@ -11,6 +11,8 @@ from plugins import base
 # from plugins import lista
 from plugins import listb
 from plugins import m3udetector
+from plugins import m3uparser
+from plugins import dbchecker
 
 class Iptv (object):
 
@@ -26,10 +28,13 @@ class Iptv (object):
         # Base = base.Source()
         # Base.getSource()
 
-        m3u = m3udetector.Source()
-        m3u.getSource()
+        # m3u = m3udetector.Source()
+        # m3u.getSource()
 
-        # self.outPut()
+        dbchk = dbchecker.DbChecker()
+        dbchk.getSource()
+
+        self.outPut()
         # self.outJson()
 
         self.T.logger("抓取完成")
@@ -39,38 +44,42 @@ class Iptv (object):
 
         sql = """SELECT * FROM
             (SELECT * FROM %s WHERE online = 1 ORDER BY delay DESC) AS delay
-            GROUP BY LOWER(delay.title)
-            HAVING delay.title != '' and delay.title != 'CCTV-' AND delay.delay < 500
-            ORDER BY level ASC, length(title) ASC, title ASC
+            GROUP BY LOWER(delay.name)
+            HAVING delay.name != '' and delay.name != 'CCTV-' AND delay.delay < 500
+            ORDER BY level ASC, length(name) ASC, name ASC
             """ % (self.DB.table)
         result = self.DB.query(sql)
 
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)).replace('python', 'http'), 'tv.m3u'), 'w', encoding="utf-8") as f:
-            f.write("#EXTM3U\n")
-            for item in result :
+        items = []
+        for r in result :
+            item = self.DB.fmtDbData(r)
+            if 'title' not in item or item['title'] is None or len(item['title']) == 0:
                 className = '其他频道'
-                if item[4] == 1 :
+                if item['level'] == 1 :
                     className = '中央频道'
-                elif item[4] == 2 :
+                elif item['level'] == 2 :
                     className = '地方频道'
-                elif item[4] == 3 :
+                elif item['level'] == 3 :
                     className = '地方频道'
-                elif item[4] == 7 :
+                elif item['level'] == 7 :
                     className = '广播频道'
                 else :
                     className = '其他频道'
+                item['title'] = className
+            items.append(item)
 
-                f.write("#EXTINF:-1 group-title=\"%s\", %s\n" % (className, item[1]))
-                f.write("%s\n" % (item[3]))
+        parser = m3uparser.M3uParser()
+        parser.items = items
+        parser.write_to_file(os.path.join(os.path.dirname(os.path.abspath(__file__)).replace('python', 'http'), 'tv.m3u'))
 
     def outJson (self) :
         self.T.logger("正在生成Json文件")
         
         sql = """SELECT * FROM
             (SELECT * FROM %s WHERE online = 1 ORDER BY delay DESC) AS delay
-            GROUP BY LOWER(delay.title)
-            HAVING delay.title != '' and delay.title != 'CCTV-' AND delay.delay < 500
-            ORDER BY level ASC, length(title) ASC, title ASC
+            GROUP BY LOWER(delay.name)
+            HAVING delay.name != '' and delay.name != 'CCTV-' AND delay.delay < 500
+            ORDER BY level ASC, length(name) ASC, name ASC
             """ % (self.DB.table)
         result = self.DB.query(sql)
 
