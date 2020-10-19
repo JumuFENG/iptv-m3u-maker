@@ -36,7 +36,7 @@ class DataBase (object) :
     def create (self) :
         if self.connStat == False : return False
 
-        sql = 'create table ' + self.table + ' (id integer PRIMARY KEY autoincrement, name text, tvgtitle text, url text, tvglogo text, tvgname text, tvgid text, quality text, level integer, cros integer, online integer, delay integer, udTime text, failcount integer)'
+        sql = 'create table ' + self.table + ' (id integer PRIMARY KEY autoincrement, name text, title text, url text, logo text, tvgname text, tvgid text, quality text, level integer, cros integer, online integer, delay integer, udTime text, failcount integer)'
         self.cur.execute(sql)
 
     def query (self, sql, reTry = 3) :
@@ -58,7 +58,8 @@ class DataBase (object) :
             if self.connStat == False : return False
             self.cur.execute(sql)
             return True
-        except :
+        except Exception as err:
+            print("execute error", err)
             return False
 
     def insert (self, data, reTry = 3):
@@ -74,7 +75,8 @@ class DataBase (object) :
         try:
             self.cur.execute(sql)
             self.conn.commit()
-        except:
+        except Exception as err:
+            print('insert err:', err)
             if reTry > 0 :
                 time.sleep(1)
                 reTry = reTry - 1

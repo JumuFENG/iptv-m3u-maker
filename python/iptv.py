@@ -28,8 +28,8 @@ class Iptv (object):
         # Base = base.Source()
         # Base.getSource()
 
-        dbchk = dbchecker.DbChecker(chkall=False)
-        dbchk.getSource()
+        # dbchk = dbchecker.DbChecker(chkall=False)
+        # dbchk.getSource()
 
         m3u = m3udetector.Source()
         m3u.getSource()
@@ -66,6 +66,7 @@ class Iptv (object):
                 item['title'] = className
             items.append(item)
 
+        self.T.logger("共" + str(len(items)) + "项")
         parser = m3uparser.M3uParser()
         parser.items = items
         parser.write_to_file(os.path.join(os.path.dirname(os.path.abspath(__file__)).replace('python', 'http'), 'iptv.m3u'))
